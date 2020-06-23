@@ -109,7 +109,7 @@ do
             --force_overwrite \
             --do_train --do_val \
             --do_save \
-            --eval_every_steps 5000 \
+            --eval_every_steps 2000 \
             --no_improvements_for_n_evals 30 \
             --save_checkpoint_every_steps 10000 \
             --output_dir ${OUTPUT_DIR}/${EXP_NAME}/${SOURCE_TASK}__${TARGET_TASK}/" sbatch ~/j2_g${GPUS[${TARGET_TASK}]}.sbatch

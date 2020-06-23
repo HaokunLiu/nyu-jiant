@@ -20,7 +20,7 @@ def write_data_configs(output_base_path):
                 "train": "ccg/ccg.train",
                 "val": "ccg/ccg.dev",
                 "test": "ccg/ccg.test",
-                "tags_to_id": "/scratch/hl3236/j2_files/data/data/ccg/tags_to_id.json",
+                "tags_to_id": "ccg/tags_to_id.json",
             },
             "name": "ccg",
         },

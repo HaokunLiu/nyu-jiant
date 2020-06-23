@@ -8,9 +8,10 @@ NYU_JIANT_DIR=...  # Where you downloaded https://github.com/jiant-dev/nyu-jiant
 MODELS_DIR=${WORKING_DIR}/models
 DATA_DIR=${WORKING_DIR}/data
 CACHE_DIR=${WORKING_DIR}/cache
-RUN_CONFIG_DIR=${WORKING_DIR}/run_config_dir/transfer_example
-OUTPUT_DIR=${WORKING_DIR}/output_dir/transfer_example
+RUN_CONFIG_DIR=${WORKING_DIR}/run_config_dir
+OUTPUT_DIR=${WORKING_DIR}/output_dir
 MODEL_TYPE=roberta-large
+EXP_NAME=transfer_example
 
 # Download model
 python jiant/scripts/preproc/export_model.py \
@@ -69,7 +70,7 @@ do
         --task_cache_base_path ${CACHE_DIR}/${MODEL_TYPE}/${TASK_NAME} \
         --train_batch_size 16 \
         --epochs ${TASK_EPOCHS[${TASK_NAME}]} \
-        --output_path ${RUN_CONFIG_DIR}/${TASK_NAME}.json
+        --output_path ${RUN_CONFIG_DIR}/${EXP_NAME}/${TASK_NAME}.json
 done
 
 # Train single task
@@ -79,7 +80,7 @@ do
         jiant/proj/main/runscript.py \
         run \
         --ZZsrc ${MODELS_DIR}/${MODEL_TYPE}/config.json \
-        --jiant_task_container_config_path ${RUN_CONFIG_DIR}/${TASK_NAME}.json \
+        --jiant_task_container_config_path ${RUN_CONFIG_DIR}/${EXP_NAME}/${TASK_NAME}.json \
         --model_load_mode from_transformers \
         --learning_rate 1e-5 \
         --force_overwrite \
@@ -88,7 +89,7 @@ do
         --eval_every_steps 2000 \
         --no_improvements_for_n_evals 30 \
         --save_checkpoint_every_steps 10000 \
-        --output_dir ${OUTPUT_DIR}/${TASK_NAME}/" sbatch ~/j2_g${GPUS[${TASK_NAME}]}.sbatch
+        --output_dir ${OUTPUT_DIR}/${EXP_NAME}/${TASK_NAME}/" sbatch ~/j2_g${GPUS[${TASK_NAME}]}.sbatch
 done
 
 # Train target task from source task
@@ -101,9 +102,9 @@ do
             run \
             --ZZoverrides model_path \
             --ZZsrc ${MODELS_DIR}/${MODEL_TYPE}/config.json \
-            --jiant_task_container_config_path ${RUN_CONFIG_DIR}/${TARGET_TASK}.json \
+            --jiant_task_container_config_path ${RUN_CONFIG_DIR}/${EXP_NAME}/${TARGET_TASK}.json \
             --model_load_mode partial \
-            --model_path ${OUTPUT_DIR}/${SOURCE_TASK}/best_model.p \
+            --model_path ${OUTPUT_DIR}/${EXP_NAME}/${SOURCE_TASK}/best_model.p \
             --learning_rate 1e-5 \
             --force_overwrite \
             --do_train --do_val \
@@ -111,10 +112,10 @@ do
             --eval_every_steps 5000 \
             --no_improvements_for_n_evals 30 \
             --save_checkpoint_every_steps 10000 \
-            --output_dir ${OUTPUT_DIR}/${SOURCE_TASK}__${TARGET_TASK}/" sbatch ~/j2_g${GPUS[${TARGET_TASK}]}.sbatch
+            --output_dir ${OUTPUT_DIR}/${EXP_NAME}/${SOURCE_TASK}__${TARGET_TASK}/" sbatch ~/j2_g${GPUS[${TARGET_TASK}]}.sbatch
     done
 done
 
 
-grep major ${OUTPUT_DIR}/*/val_metrics.json
+grep major ${OUTPUT_DIR}/${EXP_NAME}/*/val_metrics.json
 ```
